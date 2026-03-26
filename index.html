@@ -2,182 +2,109 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전국 100대 명산 탐방로</title>
+    <title>🌲 명산 등산로 탐색기 (수정본)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-green: #2d5a27;
-            --light-green: #e8f5e9;
-            --accent-brown: #5d4037;
-            --text-color: #333;
-        }
-
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f4f7f4;
-            margin: 0;
-            color: var(--text-color);
-        }
-
-        /* 헤더 디자인 */
-        header {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-                        url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            color: white;
-            padding: 60px 20px;
-            text-align: center;
-        }
-
-        header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        header p { font-size: 1.1rem; opacity: 0.9; }
-
-        /* 검색 섹션 */
-        .search-container {
-            max-width: 600px;
-            margin: -30px auto 40px;
-            background: white;
-            padding: 10px;
-            border-radius: 50px;
-            display: flex;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .search-container input {
-            flex: 1;
-            border: none;
-            padding: 15px 25px;
-            font-size: 1rem;
-            outline: none;
-            border-radius: 50px;
-        }
-
-        .search-container button {
-            background-color: var(--primary-green);
-            color: white;
-            border: none;
-            padding: 0 30px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .search-container button:hover { background-color: #1b3d17; }
-
-        /* 결과 리스트 */
+        /* 기존 디자인 스타일 유지 */
+        :root { --primary-green: #2d5a27; --light-green: #e8f5e9; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f4f7f4; margin: 0; }
+        header { background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1350'); background-size: cover; padding: 60px 20px; text-align: center; color: white; }
+        .search-container { max-width: 600px; margin: -30px auto 40px; background: white; padding: 10px; border-radius: 50px; display: flex; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .search-container input { flex: 1; border: none; padding: 15px 25px; outline: none; border-radius: 50px; }
+        .search-container button { background: var(--primary-green); color: white; border: none; padding: 0 30px; border-radius: 50px; cursor: pointer; }
         main { max-width: 1000px; margin: 0 auto; padding: 20px; }
-        
-        #result-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .mountain-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-            border-top: 5px solid var(--primary-green);
-        }
-
-        .mountain-card:hover { transform: translateY(-5px); }
-
-        .card-content { padding: 20px; }
-        .card-content h3 { margin: 0 0 10px; color: var(--primary-green); }
-        .card-content p { font-size: 0.9rem; line-height: 1.6; color: #666; }
-        
-        .loading { text-align: center; font-weight: bold; color: var(--primary-green); display: none; }
-
-        footer { text-align: center; padding: 40px; color: #888; font-size: 0.8rem; }
+        #result-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .mountain-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--primary-green); padding: 20px; }
+        .error-box { background: #ffebee; color: #c62828; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; font-size: 0.9rem; border: 1px solid #ffcdd2; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>🌲 명산 등산로 탐색기</h1>
-    <p>산림청 데이터를 활용한 대한민국 100대 명산 정보</p>
+    <p>산림청 공공데이터 실시간 연동</p>
 </header>
 
 <div class="search-container">
-    <input type="text" id="mountainName" placeholder="궁금한 산 이름을 입력하세요 (예: 북한산)">
+    <input type="text" id="mountainName" placeholder="산 이름을 입력하세요 (예: 북한산)">
     <button onclick="searchMountain()">검색</button>
 </div>
 
 <main>
-    <div id="loading" class="loading">산 정보를 불러오는 중입니다...</div>
-    <div id="result-list">
-        </div>
+    <div id="error-display" class="error-box"></div>
+    
+    <div id="loading" style="text-align:center; display:none;">데이터 로딩 중...</div>
+    <div id="result-list"></div>
 </main>
-
-<footer>
-    <p>본 사이트는 공공데이터포털의 산림청_명산등산로 API를 활용하여 제작되었습니다.</p>
-    <p>© 2026 명산 탐방 프로젝트</p>
-</footer>
 
 <script>
     async function searchMountain() {
-        const mountainInput = document.getElementById('mountainName').value;
+        const mountainName = document.getElementById('mountainName').value;
         const resultList = document.getElementById('result-list');
+        const errorDisplay = document.getElementById('error-display');
         const loading = document.getElementById('loading');
-        
-        if (!mountainInput) {
-            alert('산 이름을 입력해 주세요!');
-            return;
-        }
 
-        // 결과 초기화 및 로딩 표시
+        if (!mountainName) { alert('이름을 입력하세요!'); return; }
+
+        // 초기화
         resultList.innerHTML = '';
+        errorDisplay.style.display = 'none';
         loading.style.display = 'block';
 
-        // API 설정
+        // ⚠️ 핵심: 인증키 인코딩 문제 해결을 위해 두 가지 키를 모두 준비하세요.
+        // 포털에서 준 '일반 인증키(Encoding)'를 그대로 넣으세요.
         const serviceKey = 'eaa76c146cf0d0ad6adb733c6208d108ea5564be3b9de7c629d7c3279eb7c0d1';
-        const url = `https://api.forest.go.kr/openapi/service/cultureInfoService/gdTrailInfoImgOpenAPI?ServiceKey=${serviceKey}&searchWrd=${encodeURIComponent(mountainInput)}`;
+        
+        // 검색 기능을 수행하는 '명산등산로 검색' 상세기능 URL 사용
+        const url = `https://api.forest.go.kr/openapi/service/cultureInfoService/gdTrailInfoOpenAPI?serviceKey=${serviceKey}&searchWrd=${encodeURIComponent(mountainName)}`;
 
         try {
             const response = await fetch(url);
-            const textData = await response.text();
             
-            // XML 파싱
+            if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+
+            const textData = await response.text();
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(textData, "text/xml");
-            const items = xmlDoc.getElementsByTagName("item");
 
+            // API 에러 메시지 확인 (인증키 문제 등)
+            const errMsg = xmlDoc.getElementsByTagName("returnAuthMsg")[0]?.textContent;
+            if (errMsg) throw new Error(`API 인증 오류: ${errMsg}`);
+
+            const items = xmlDoc.getElementsByTagName("item");
             loading.style.display = 'none';
 
             if (items.length === 0) {
-                resultList.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">검색 결과가 없습니다.</p>';
+                resultList.innerHTML = '<p style="grid-column:1/-1; text-align:center;">결과가 없습니다. 다른 산 이름을 입력해 보세요.</p>';
                 return;
             }
 
-            for (let i = 0; i < items.length; i++) {
-                const title = items[i].getElementsByTagName("titl")[0]?.textContent || "정보 없음";
-                const content = items[i].getElementsByTagName("content")[0]?.textContent || "상세 설명이 없습니다.";
+            // 결과 화면 표시
+            for (let item of items) {
+                const title = item.getElementsByTagName("mntnm")[0]?.textContent || "산 이름 없음";
+                const address = item.getElementsByTagName("mntiadd")[0]?.textContent || "주소 정보 없음";
+                const height = item.getElementsByTagName("mntihght")[0]?.textContent || "0";
                 
                 const card = document.createElement('div');
                 card.className = 'mountain-card';
                 card.innerHTML = `
-                    <div class="card-content">
-                        <h3>${title}</h3>
-                        <p>${content}</p>
-                    </div>
+                    <h3>📍 ${title}</h3>
+                    <p><strong>위치:</strong> ${address}</p>
+                    <p><strong>높이:</strong> ${height}m</p>
                 `;
                 resultList.appendChild(card);
             }
+
         } catch (error) {
-            console.error("API 호출 오류:", error);
             loading.style.display = 'none';
-            alert("데이터를 가져오는 중 오류가 발생했습니다. (CORS 문제일 수 있습니다)");
+            errorDisplay.style.display = 'block';
+            errorDisplay.innerHTML = `
+                <strong>❌ 오류 발생:</strong> ${error.message}<br>
+                <small>해결책: 1. 인증키가 승인된 지 1~2시간이 지났는지 확인하세요. 2. 검색어가 정확한지 확인하세요.</small>
+            `;
+            console.error(error);
         }
     }
-
-    // 엔터키 검색 지원
-    document.getElementById('mountainName').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') searchMountain();
-    });
 </script>
 
 </body>
