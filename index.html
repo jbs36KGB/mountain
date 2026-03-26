@@ -1,1 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전국 100대 명산 탐방로</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2d5a27;
+            --light-green: #e8f5e9;
+            --accent-brown: #5d4037;
+            --text-color: #333;
+        }
 
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f4f7f4;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        /* 헤더 디자인 */
+        header {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        header p { font-size: 1.1rem; opacity: 0.9; }
+
+        /* 검색 섹션 */
+        .search-container {
+            max-width: 600px;
+            margin: -30px auto 40px;
+            background: white;
+            padding: 10px;
+            border-radius: 50px;
+            display: flex;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .search-container input {
+            flex: 1;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1rem;
+            outline: none;
+            border-radius: 50px;
+        }
+
+        .search-container button {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 0 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .search-container button:hover { background-color: #1b3d17; }
+
+        /* 결과 리스트 */
+        main { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        
+        #result-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .mountain-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            border-top: 5px solid var(--primary-green);
+        }
+
+        .mountain-card:hover { transform: translateY(-5px); }
+
+        .card-content { padding: 20px; }
+        .card-content h3 { margin: 0 0 10px; color: var(--primary-green); }
+        .card-content p { font-size: 0.9rem; line-height: 1.6; color: #666; }
+        
+        .loading { text-align: center; font-weight: bold; color: var(--primary-green); display: none; }
+
+        footer { text-align: center; padding: 40px; color: #888; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🌲 명산 등산로 탐색기</h1>
+    <p>산림청 데이터를 활용한 대한민국 100대 명산 정보</p>
+</header>
+
+<div class="search-container">
+    <input type="text" id="mountainName" placeholder="궁금한 산 이름을 입력하세요 (예: 북한산)">
+    <button onclick="searchMountain()">검색</button>
+</div>
+
+<main>
+    <div id="loading" class="loading">산 정보를 불러오는 중입니다...</div>
+    <div id="result-list">
+        </div>
+</main>
+
+<footer>
+    <p>본 사이트는 공공데이터포털의 산림청_명산등산로 API를 활용하여 제작되었습니다.</p>
+    <p>© 2026 명산 탐방 프로젝트</p>
+</footer>
+
+<script>
+    async function searchMountain() {
+        const mountainInput = document.getElementById('mountainName').value;
+        const resultList = document.getElementById('result-list');
+        const loading = document.getElementById('loading');
+        
+        if (!mountainInput) {
+            alert('산 이름을 입력해 주세요!');
+            return;
+        }
+
+        // 결과 초기화 및 로딩 표시
+        resultList.innerHTML = '';
+        loading.style.display = 'block';
+
+        // API 설정
+        const serviceKey = 'eaa76c146cf0d0ad6adb733c6208d108ea5564be3b9de7c629d7c3279eb7c0d1';
+        const url = `https://api.forest.go.kr/openapi/service/cultureInfoService/gdTrailInfoImgOpenAPI?ServiceKey=${serviceKey}&searchWrd=${encodeURIComponent(mountainInput)}`;
+
+        try {
+            const response = await fetch(url);
+            const textData = await response.text();
+            
+            // XML 파싱
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(textData, "text/xml");
+            const items = xmlDoc.getElementsByTagName("item");
+
+            loading.style.display = 'none';
+
+            if (items.length === 0) {
+                resultList.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">검색 결과가 없습니다.</p>';
+                return;
+            }
+
+            for (let i = 0; i < items.length; i++) {
+                const title = items[i].getElementsByTagName("titl")[0]?.textContent || "정보 없음";
+                const content = items[i].getElementsByTagName("content")[0]?.textContent || "상세 설명이 없습니다.";
+                
+                const card = document.createElement('div');
+                card.className = 'mountain-card';
+                card.innerHTML = `
+                    <div class="card-content">
+                        <h3>${title}</h3>
+                        <p>${content}</p>
+                    </div>
+                `;
+                resultList.appendChild(card);
+            }
+        } catch (error) {
+            console.error("API 호출 오류:", error);
+            loading.style.display = 'none';
+            alert("데이터를 가져오는 중 오류가 발생했습니다. (CORS 문제일 수 있습니다)");
+        }
+    }
+
+    // 엔터키 검색 지원
+    document.getElementById('mountainName').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') searchMountain();
+    });
+</script>
+
+</body>
+</html>
